@@ -21,7 +21,6 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     console.error('Error:', err);
     
     res.status(statusCode).json({
-        code: statusCode,
         message: errorMessage,
         error: err 
     });

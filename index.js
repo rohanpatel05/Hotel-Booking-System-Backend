@@ -3,6 +3,7 @@ import 'dotenv/config';
 import connectDB from './config/db.js';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js'
+import roomControllers from './controllers/roomControllers.js';
 
 
 const app = express(); 
@@ -14,6 +15,7 @@ connectDB();
 
 let baseUrl = "/api";
 app.use(baseUrl, userRoutes);
+app.use(baseUrl, roomControllers);
 
 
 const port = process.env.PORT || 8080;

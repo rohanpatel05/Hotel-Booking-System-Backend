@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js'
 import roomRoutes from './routes/roomRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import errorHandlerMiddleware from './middlewares/errorHandler.js';
 
 const app = express(); 
 
@@ -19,6 +20,7 @@ app.use(baseUrl, userRoutes);
 app.use(baseUrl, roomRoutes);
 app.use(baseUrl, bookingRoutes);
 app.use(baseUrl, paymentRoutes);
+app.use(errorHandlerMiddleware)
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

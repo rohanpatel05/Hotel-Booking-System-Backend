@@ -3,8 +3,9 @@ import 'dotenv/config';
 import connectDB from './config/db.js';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js'
-import roomControllers from './controllers/roomControllers.js';
-import bookingControllers from './controllers/bookingControllers.js';
+import roomRoutes from './routes/roomRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 const app = express(); 
 
@@ -15,8 +16,9 @@ connectDB();
 
 let baseUrl = "/api";
 app.use(baseUrl, userRoutes);
-app.use(baseUrl, roomControllers);
-app.use(baseUrl, bookingControllers);
+app.use(baseUrl, roomRoutes);
+app.use(baseUrl, bookingRoutes);
+app.use(baseUrl, paymentRoutes);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

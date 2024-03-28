@@ -2,11 +2,11 @@ import errorCodes from '../config/errorCodes.js'
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import 'dotenv/config';
+import bcrypt from 'bcrypt';
 
 const nameRegex = /^[a-zA-Z]+(?:\s+[a-zA-Z]+)*$/; 
 const emailRegex = /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/; 
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,16}$/;
-
 
 const accessTokenExpiresIn = '15m';
 const refreshTokenExpiresIn = '7d';
@@ -81,7 +81,7 @@ const userController = {
             const user = await User.findOne({ email });
 
             if (!user) {
-                return res.status(errorCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
+                return res.status(errorCodes.UNAUTHORIZED).json({ message: 'User not registerd' });
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password);
@@ -174,11 +174,15 @@ const userController = {
             if (!currentPassword || !newPassword ) {
                 return res.status(errorCodes.BAD_REQUEST).json({ message: "Current password, and new password are required" });
             }
-            if (!emailRegex.test(currentPassword)) {
+            if (!passwordRegex.test(currentPassword)) {
                 return res.status(errorCodes.BAD_REQUEST).json({ message: "Invalid current password format" });
             }
             if (!passwordRegex.test(newPassword)) {
                 return res.status(errorCodes.BAD_REQUEST).json({ message: "Invalid new password format" });
+            }
+
+            if (currentPassword === newPassword) {
+                return res.status(errorCodes.BAD_REQUEST).json({ message: "New password cannot be the same as current password" });
             }
 
             const user = await User.findById(userId);

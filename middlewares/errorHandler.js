@@ -1,4 +1,4 @@
-import { errorCodes } from "../config/errorCodes";
+import errorCodes from "../config/errorCodes.js";
 
 const errorHandlerMiddleware = (err, req, res, next) => {
     let statusCode = errorCodes.INTERNAL_SERVER_ERROR;

@@ -13,14 +13,24 @@ const app = express();
 app.use(express.json()); 
 app.use(cors()); 
 
-connectDB();
+app.post('/test', (req, res) => {
+  res.json(req.body);
+});
+
+app.get("/test", (req, res) => {
+  res.send("It's working!");
+});
+
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 let baseUrl = "/api";
 app.use(baseUrl, userRoutes);
 app.use(baseUrl, roomRoutes);
 app.use(baseUrl, bookingRoutes);
 app.use(baseUrl, paymentRoutes);
-app.use(errorHandlerMiddleware)
+app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
@@ -44,3 +54,5 @@ process.on('SIGTERM', () => {
       process.exit(0);
   });
 });
+
+export default app;

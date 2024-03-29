@@ -51,7 +51,7 @@ const userController = {
             console.log(refreshToken);
             console.log(newUser);
 
-            res.status(201).json({
+            return res.status(201).json({
                 message: 'User created successfully',
                 accessToken,
                 accessTokenExpiration: accessTokenExpiration, 
@@ -93,7 +93,7 @@ const userController = {
             const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: accessTokenExpiresIn });
             const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: refreshTokenExpiresIn });
 
-            res.status(200).json({
+            return res.status(200).json({
                 message: 'Login successful',
                 accessToken,
                 accessTokenExpiration: accessTokenExpiration, 
@@ -107,7 +107,7 @@ const userController = {
     },
     async logout (req, res, next) {
         try {
-            res.status(200).json({ message: 'Logout successful' });
+            return res.status(200).json({ message: 'Logout successful' });
         } catch (error) {
             next(error); 
         }
@@ -133,7 +133,7 @@ const userController = {
 
                 const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: accessTokenExpiresIn });
 
-                res.status(200).json({
+                return res.status(200).json({
                     message: 'Access token refreshed successfully',
                     accessToken,
                     accessTokenExpiration: accessTokenExpiration
@@ -161,7 +161,7 @@ const userController = {
 
             await user.save();
 
-            res.status(200).json({ message: 'User profile updated successfully', user });
+            return res.status(200).json({ message: 'User profile updated successfully', user });
         } catch (error) {
             next(error); 
         }
@@ -200,7 +200,7 @@ const userController = {
             user.password = newPassword;
             await user.save();
 
-            res.status(200).json({ message: 'Password changed successfully' });
+            return res.status(200).json({ message: 'Password changed successfully' });
         } catch (error) {
             next(error); 
         }

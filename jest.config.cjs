@@ -9,4 +9,7 @@ module.exports = {
         '^@config/(.*)$': '<rootDir>/config/$1',
         '^@routes/(.*)$': '<rootDir>/routes/$1',
     },
+    transform: {
+        '^.+\\.js$': 'babel-jest',
+    },
 };

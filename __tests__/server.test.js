@@ -2,8 +2,6 @@ import request from 'supertest';
 import 'dotenv/config';
 import app from '../index.js'; 
 import { connectDB, disconnectDB } from '../config/db.js';
-import errorCodes from "../config/errorCodes.js";
-import errorHandlerMiddleware from '../middlewares/errorHandler.js';
 
 let server; 
 

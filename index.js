@@ -1,6 +1,6 @@
 import express from 'express';
 import 'dotenv/config';
-import connectDB from './config/db.js';
+import { connectDB, disconnectDB } from './config/db.js';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js'
 import roomRoutes from './routes/roomRoutes.js';
@@ -23,6 +23,24 @@ app.use(baseUrl, paymentRoutes);
 app.use(errorHandlerMiddleware)
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT. Closing server...');
+  server.close(() => {
+      console.log('Server closed');
+      disconnectDB();
+      process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Closing server...');
+  server.close(() => {
+      console.log('Server closed');
+      disconnectDB(); 
+      process.exit(0);
+  });
 });

@@ -3,16 +3,37 @@ import 'dotenv/config';
 
 const { MONGODB_URI }  = process.env;
 
+const MAX_RETRIES = 5;
+let retryCount = 0;
+
 const connectDB = async () => {
 
-    mongoose.connect(MONGODB_URI)
+    mongoose.connect(MONGODB_URI, {
+        minPoolSize: 10,
+        maxPoolSize: 50,
+    })
     .then(() => {
         console.log('Successfully connected to the DB!');
     })
     .catch(err => {
         console.error('Error connecting to the DB:', err);
-        process.exit(1);
+
+        if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            console.log(`Retrying connection (attempt ${retryCount}) in 5 seconds...`);
+            setTimeout(connectDB, 5000);
+        } else {
+            console.error('Max retry attempts reached. Exiting...');
+            process.exit(1);
+        }
+
     });
 };
 
-export default connectDB;
+const disconnectDB = () => {
+    mongoose.disconnect(() => {
+        console.log('Disconnected from MongoDB');
+    });
+};
+
+export {connectDB, disconnectDB};

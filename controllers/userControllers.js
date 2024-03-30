@@ -17,7 +17,7 @@ const refreshTokenExpiration = 604800;
 const userController = {
   async signup(req, res, next) {
     try {
-      const { name, email, password } = req.body;
+      const { name = "", email = "", password = "" } = req.body;
 
       if (!name || !email || !password) {
         return res
@@ -80,7 +80,7 @@ const userController = {
   },
   async login(req, res, next) {
     try {
-      const { email, password } = req.body;
+      const { email = "", password = "" } = req.body;
 
       if (!email || !password) {
         return res
@@ -146,7 +146,7 @@ const userController = {
   },
   async refresh(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const { refreshToken = "" } = req.body;
 
       if (!refreshToken) {
         return res
@@ -192,7 +192,12 @@ const userController = {
   async updateUserProfile(req, res, next) {
     try {
       const { userId } = req.params;
-      const { name, email, phoneNumber, address } = req.body;
+      const {
+        name = "",
+        email = "",
+        phoneNumber = "",
+        address = "",
+      } = req.body;
 
       const user = await User.findById(userId);
 
@@ -218,7 +223,7 @@ const userController = {
   },
   async changePassword(req, res, next) {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const { currentPassword = "", newPassword = "" } = req.body;
       const user = res.locals.user;
 
       if (!currentPassword || !newPassword) {

@@ -168,7 +168,7 @@ const userController = {
 
           if (!user) {
             return res
-              .status(errorCodes.UNAUTHORIZED)
+              .status(errorCodes.NOT_FOUND)
               .json({ message: "User not found" });
           }
 

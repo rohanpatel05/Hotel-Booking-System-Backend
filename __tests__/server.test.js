@@ -1,15 +1,6 @@
 import request from "supertest";
 import "dotenv/config";
 import app from "../app.js";
-import { connectDB, disconnectDB } from "../config/db.js";
-
-beforeAll(async () => {
-  await connectDB();
-});
-
-afterAll(async () => {
-  await disconnectDB();
-});
 
 test("GET /test should return status 200 and a success message for /test route", async () => {
   const response = await request(app).get("/test");

@@ -66,10 +66,6 @@ const userController = {
         { expiresIn: refreshTokenExpiresIn }
       );
 
-      console.log(accessToken);
-      console.log(refreshToken);
-      console.log(newUser);
-
       return res.status(201).json({
         message: "User created successfully",
         accessToken,

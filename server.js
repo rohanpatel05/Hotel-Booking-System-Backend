@@ -1,5 +1,6 @@
 import "dotenv/config";
 import app from "./app.js";
+import { disconnectDB } from "./config/db.js";
 
 const port = process.env.PORT || 8081;
 const server = app.listen(port, () => {

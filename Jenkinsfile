@@ -46,10 +46,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh "docker stop $CONTAINER_NAME || true"
-                    sh "docker rm $CONTAINER_NAME || true"
+                    sh "docker stop ${CONTAINER_NAME} || true"
+                    sh "docker rm ${CONTAINER_NAME} || true"
 
-                    docker.run("-d --name $CONTAINER_NAME -p 3000:3000 ${DOCKER_IMAGE}:latest")
+                    docker.run("-d --name ${CONTAINER_NAME} -p 3000:3000 ${DOCKER_IMAGE}:latest")
                 }
             }
         }
@@ -58,8 +58,8 @@ pipeline {
     post {
         always {
             script {
-                sh "docker rmi $(docker images -q ${DOCKER_IMAGE}:${env.BUILD_ID}) || true"
-                sh "docker rmi $(docker images -q ${DOCKER_IMAGE}:latest) || true"
+                sh "docker rmi \$(docker images -q ${DOCKER_IMAGE}:${env.BUILD_ID}) || true"
+                sh "docker rmi \$(docker images -q ${DOCKER_IMAGE}:latest) || true"
             }
         }
     }

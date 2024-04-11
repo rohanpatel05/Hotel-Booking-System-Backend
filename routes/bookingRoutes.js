@@ -1,13 +1,22 @@
 import express from "express";
 import bookingController from "../controllers/bookingControllers.js";
+import userAuthMiddleware from "../middlewares/userAuthMiddlewear.js";
 
 const router = express.Router();
 
 const baseBookingUrl = "/booking";
 
-router.post(baseBookingUrl + "/:roomId/book", bookingController.bookRoom);
+router.post(
+  baseBookingUrl + "/book/:roomId",
+  userAuthMiddleware,
+  bookingController.bookRoom
+);
 router.get(baseBookingUrl + "/", bookingController.getAllBookings);
-router.get(baseBookingUrl + "/:id", bookingController.getBookingById);
-router.put(baseBookingUrl + "/:id/cancel", bookingController.cancelBooking);
+router.get(baseBookingUrl + "/:bookingId", bookingController.getBookingById);
+router.put(
+  baseBookingUrl + "/cancel/:bookingId",
+  userAuthMiddleware,
+  bookingController.cancelBooking
+);
 
 export default router;

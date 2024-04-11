@@ -5,7 +5,7 @@ import userAuthMiddleware from "../middlewares/userAuthMiddlewear.js";
 
 const router = express.Router();
 
-let baseUserUrl = "/user";
+const baseUserUrl = "/user";
 
 router.post("/signup", userController.signup);
 router.post("/login", userController.login);

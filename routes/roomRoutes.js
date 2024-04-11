@@ -3,7 +3,7 @@ import roomController from "../controllers/roomControllers.js";
 
 const router = express.Router();
 
-let baseRoomURL = "/room";
+const baseRoomURL = "/room";
 
 router.get(baseRoomURL + "/", roomController.getAllRooms);
 router.get(baseRoomURL + "/byId/:userId", roomController.getRoomById);

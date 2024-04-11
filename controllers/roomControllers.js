@@ -9,7 +9,7 @@ const roomController = {
   async getAllRooms(req, res, next) {
     try {
       const rooms = await Room.find({});
-      return res.status(200).json(rooms);
+      return res.status(200).json({ rooms: rooms });
     } catch (error) {
       next(error);
     }

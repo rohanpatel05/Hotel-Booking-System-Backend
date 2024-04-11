@@ -8,7 +8,7 @@ const priceRegex = /^\d+(\.\d{1,2})?$/;
 const paymentController = {
   async processPayment(req, res, next) {
     try {
-      const { amount } = req.body;
+      const { amount = "" } = req.body;
 
       if (!amount) {
         return res

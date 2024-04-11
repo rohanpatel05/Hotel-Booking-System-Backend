@@ -25,13 +25,13 @@ const roomController = {
       }
 
       const room = await Room.findById(userId);
-      if (room) {
-        return res.status(200).json({ room: room });
-      } else {
+      if (!room) {
         return res
           .status(errorCodes.NOT_FOUND)
           .json({ message: "Room not found" });
       }
+
+      return res.status(200).json({ room: room });
     } catch (error) {
       next(error);
     }

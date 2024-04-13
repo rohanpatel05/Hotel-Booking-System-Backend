@@ -4,6 +4,7 @@ import errorCodes from "../config/errorCodes.js";
 const roomNumberRegex = /^\d+$/;
 const priceRegex = /^\d+(\.\d{1,2})?$/;
 const bedsRegex = /^\d+$/;
+const descriptionRegex = /^[a-zA-Z0-9\s.,!?'-]*$/;
 
 const roomController = {
   async getAllRooms(req, res, next) {
@@ -41,13 +42,14 @@ const roomController = {
       const {
         roomNumber = "",
         type = "",
+        description = "",
         price = "",
         amenities = [],
         beds = "",
         availability = true,
       } = req.body;
 
-      if (!roomNumber || !type || !price || !beds) {
+      if (!roomNumber || !type || !description || !price || !beds) {
         return res.status(errorCodes.BAD_REQUEST).json({
           message:
             "Room number, room type, price, and beds values are required",
@@ -66,6 +68,12 @@ const roomController = {
           .json({ message: "Invalid room type" });
       }
 
+      if (!descriptionRegex.test(description)) {
+        return res
+          .status(errorCodes.BAD_REQUEST)
+          .json({ message: "Invalid description format" });
+      }
+
       if (!priceRegex.test(price)) {
         return res
           .status(errorCodes.BAD_REQUEST)
@@ -81,6 +89,7 @@ const roomController = {
       const room = new Room({
         roomNumber,
         type,
+        description,
         price,
         amenities,
         beds,
@@ -101,6 +110,7 @@ const roomController = {
       const {
         roomNumber = "",
         type = "",
+        description = "",
         price = "",
         amenities = [],
         beds = "",
@@ -117,6 +127,12 @@ const roomController = {
         return res
           .status(errorCodes.BAD_REQUEST)
           .json({ message: "Invalid room number format" });
+      }
+
+      if (description && !descriptionRegex.test(description)) {
+        return res
+          .status(errorCodes.BAD_REQUEST)
+          .json({ message: "Invalid description format" });
       }
 
       if (price && !priceRegex.test(price)) {
@@ -141,6 +157,7 @@ const roomController = {
 
       if (roomNumber) room.roomNumber = roomNumber;
       if (type) room.type = type;
+      if (description) room.description = description;
       if (price) room.price = price;
       if (amenities.length > 0) room.amenities = amenities;
       if (beds) room.beds = beds;

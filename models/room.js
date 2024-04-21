@@ -10,7 +10,7 @@ const roomSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ["Standard", "Deluxe", "Suite"],
+    enum: ["Classic", "Deluxe", "Suite"],
     required: true,
   },
   description: {

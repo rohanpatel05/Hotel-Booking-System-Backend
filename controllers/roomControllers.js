@@ -62,7 +62,7 @@ const roomController = {
           .json({ message: "Invalid room number format" });
       }
 
-      if (!["Standard", "Deluxe", "Suite"].includes(type)) {
+      if (!["Classic", "Deluxe", "Suite"].includes(type)) {
         return res
           .status(errorCodes.BAD_REQUEST)
           .json({ message: "Invalid room type" });

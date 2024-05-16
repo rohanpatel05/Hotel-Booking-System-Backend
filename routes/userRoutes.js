@@ -9,8 +9,8 @@ const baseUserUrl = "/user";
 
 router.post("/signup", userController.signup);
 router.post("/login", userController.login);
-router.get("/logout", userAuthMiddleware, userController.logout);
-router.put("/refresh", userController.refresh);
+router.post("/logout", userAuthMiddleware, userController.logout);
+router.post("/refresh", userController.refresh);
 
 // User profile routes
 router.put(

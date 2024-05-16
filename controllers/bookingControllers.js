@@ -2,82 +2,87 @@ import Booking from "../models/booking.js";
 import Room from "../models/room.js";
 import Payment from "../models/payment.js";
 import errorCodes from "../config/errorCodes.js";
+import mongoose from "mongoose";
 
 const amountRegex = /^\d+(\.\d{1,2})?$/;
 
 const bookingController = {
   async bookRoom(req, res, next) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
-      const { roomId } = req.params;
-      const {
-        checkInDate = null,
-        checkOutDate = null,
-        totalAmount = "",
-        status = "",
-        paymentMethod = "",
-      } = req.body;
+      const { bookings = [], totalAmount = 0.0, paymentMethod = "" } = req.body;
+      const userId = req.user.userId;
 
-      if (
-        !checkInDate ||
-        !checkOutDate ||
-        new Date(checkInDate) >= new Date(checkOutDate)
-      ) {
-        return res
-          .status(errorCodes.BAD_REQUEST)
-          .json({ message: "Invalid check-in or check-out date" });
+      if (!bookings || bookings.length === 0.0) {
+        return res.status(errorCodes.BAD_REQUEST).json({
+          message:
+            "Invalid request: No booking requests provided. Please specify at least one room type with desired quantity, check-in, and check-out dates.",
+        });
       }
 
-      if (!totalAmount || !amountRegex.test(totalAmount)) {
+      if (totalAmount === 0 || !amountRegex.test(totalAmount)) {
         return res
           .status(errorCodes.BAD_REQUEST)
           .json({ message: "Invalid total amount format" });
       }
 
-      // Check if room exists
-      const room = await Room.findById(roomId);
-      if (!room) {
+      if (!paymentMethod) {
         return res
           .status(errorCodes.BAD_REQUEST)
-          .json({ message: "Room not found" });
+          .json({ message: "Payment method is required" });
       }
 
-      // Check room availability
-      if (!room.availability) {
-        return res
-          .status(errorCodes.BAD_REQUEST)
-          .json({ message: "Room is not available" });
+      const bookingResults = [];
+      for (const booking of bookings) {
+        const { roomId, checkInDate, checkOutDate } = booking;
+
+        const conflicts = await Booking.find({
+          room: roomId,
+          $or: [
+            {
+              checkInDate: { $lt: new Date(checkOutDate) },
+              checkOutDate: { $gt: new Date(checkInDate) },
+            },
+          ],
+        }).session(session);
+
+        if (conflicts.length > 0) {
+          throw new Error(
+            `Room ${roomId} is not available from ${checkInDate} to ${checkOutDate}.`
+          );
+        }
+
+        const newBooking = new Booking({
+          customer: userId,
+          room: roomId,
+          checkInDate: new Date(checkInDate),
+          checkOutDate: new Date(checkOutDate),
+          totalAmount: totalAmount,
+          status: "Confirmed",
+        });
+        await newBooking.save({ session });
+        bookingResults.push(newBooking);
+
+        const newPayment = new Payment({
+          booking: newBooking._id,
+          amount: totalAmount,
+          paymentMethod: paymentMethod,
+          transactionStatus: "Success",
+        });
+        await newPayment.save({ session });
       }
 
-      // Create booking
-      const booking = new Booking({
-        customer: req.user.userId,
-        room: roomId,
-        checkInDate,
-        checkOutDate,
-        totalAmount,
-        status: status || "Pending",
-      });
-      await booking.save();
-
-      // Create payment record
-      const payment = new Payment({
-        booking: booking._id,
-        amount: totalAmount,
-        paymentMethod,
-      });
-      await payment.save();
-
-      // Update room availability
-      room.availability = false;
-      await room.save();
-
-      return res.status(201).json({
-        message: "Booking created successfully",
-        booking: booking,
-        payment: payment,
+      await session.commitTransaction();
+      res.status(200).json({
+        message: "Booking successful",
+        bookings: bookingResults,
       });
     } catch (error) {
-      next(error);
+      await session.abortTransaction();
+      res.status(errorCodes.BAD_REQUEST).json({ message: error.message });
+    } finally {
+      session.endSession();
     }
   },
   async getAllBookings(req, res, next) {
@@ -136,6 +141,92 @@ const bookingController = {
         .json({ message: "Booking cancelled successfully", booking: booking });
     } catch (error) {
       next(error);
+    }
+  },
+  async checkAvailability(req, res, next) {
+    try {
+      const { requests = [] } = req.body;
+
+      if (!requests || requests.length === 0) {
+        return res.status(errorCodes.BAD_REQUEST).json({
+          message:
+            "Invalid request: No booking requests provided. Please specify at least one room type with desired quantity, check-in, and check-out dates.",
+        });
+      }
+
+      const results = [];
+
+      for (let request of requests) {
+        const { type, quantity, checkInDate, checkOutDate } = request;
+        const desiredCheckInDate = new Date(checkInDate);
+        const desiredCheckOutDate = new Date(checkOutDate);
+
+        const availableRooms = await Room.aggregate([
+          {
+            $match: { type },
+          },
+          {
+            $lookup: {
+              from: "bookings",
+              let: { room_id: "$_id" },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ["$room", "$$room_id"] },
+                        { $lt: ["$checkInDate", desiredCheckOutDate] },
+                        { $gt: ["$checkOutDate", desiredCheckInDate] },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: "bookings",
+            },
+          },
+          {
+            $match: {
+              $expr: { $lt: [{ $size: "$bookings" }, quantity] },
+            },
+          },
+        ]);
+
+        const detailedAvailability = await Promise.all(
+          availableRooms.slice(0, quantity).map(async (room) => {
+            const nights =
+              (desiredCheckOutDate - desiredCheckInDate) /
+              (1000 * 60 * 60 * 24);
+            const totalCost = room.price * nights;
+            return {
+              roomId: room._id,
+              price: totalCost,
+            };
+          })
+        );
+
+        if (detailedAvailability.length >= quantity) {
+          results.push({
+            type,
+            quantityRequested: quantity,
+            quantityAvailable: detailedAvailability.length,
+            available: true,
+            rooms: detailedAvailability,
+          });
+        } else {
+          results.push({
+            type,
+            quantityRequested: quantity,
+            quantityAvailable: detailedAvailability.length,
+            available: false,
+            message: `Only ${detailedAvailability.length} of ${quantity} requested ${type} rooms are available.`,
+          });
+        }
+      }
+
+      res.status(200).json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error });
     }
   },
 };

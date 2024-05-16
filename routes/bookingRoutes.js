@@ -7,7 +7,7 @@ const router = express.Router();
 const baseBookingUrl = "/booking";
 
 router.post(
-  baseBookingUrl + "/book/:roomId",
+  baseBookingUrl + "/book",
   userAuthMiddleware,
   bookingController.bookRoom
 );
@@ -17,6 +17,10 @@ router.put(
   baseBookingUrl + "/cancel/:bookingId",
   userAuthMiddleware,
   bookingController.cancelBooking
+);
+router.post(
+  baseBookingUrl + "/checkAvailability",
+  bookingController.checkAvailability
 );
 
 export default router;

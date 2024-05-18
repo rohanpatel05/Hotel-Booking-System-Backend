@@ -148,7 +148,7 @@ const bookingController = {
       const { requests = [] } = req.body;
 
       if (!requests || requests.length === 0) {
-        return res.status(errorCodes.BAD_REQUEST).json({
+        return res.status(400).json({
           message:
             "Invalid request: No booking requests provided. Please specify at least one room type with desired quantity, check-in, and check-out dates.",
         });
@@ -161,39 +161,55 @@ const bookingController = {
         const desiredCheckInDate = new Date(checkInDate);
         const desiredCheckOutDate = new Date(checkOutDate);
 
-        const availableRooms = await Room.aggregate([
+        const allRooms = await Room.find({ type });
+
+        if (allRooms.length === 0) {
+          results.push({
+            type,
+            quantityRequested: quantity,
+            quantityAvailable: 0,
+            available: false,
+            message: `No rooms of type ${type} are available.`,
+          });
+          continue;
+        }
+
+        const roomIds = allRooms.map(
+          (room) => new mongoose.Types.ObjectId(room._id)
+        );
+
+        const overlappingBookings = await Booking.aggregate([
           {
-            $match: { type },
-          },
-          {
-            $lookup: {
-              from: "bookings",
-              let: { room_id: "$_id" },
-              pipeline: [
+            $match: {
+              room: { $in: roomIds },
+              status: "Confirmed",
+              $or: [
                 {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ["$room", "$$room_id"] },
-                        { $lt: ["$checkInDate", desiredCheckOutDate] },
-                        { $gt: ["$checkOutDate", desiredCheckInDate] },
-                      ],
-                    },
-                  },
+                  checkInDate: { $lt: desiredCheckOutDate },
+                  checkOutDate: { $gt: desiredCheckInDate },
                 },
               ],
-              as: "bookings",
             },
           },
           {
-            $match: {
-              $expr: { $lt: [{ $size: "$bookings" }, quantity] },
+            $group: {
+              _id: "$room",
+              count: { $sum: 1 },
             },
           },
         ]);
 
-        const detailedAvailability = await Promise.all(
-          availableRooms.slice(0, quantity).map(async (room) => {
+        const bookedRoomIds = overlappingBookings.map((booking) =>
+          booking._id.toString()
+        );
+
+        const availableRooms = allRooms.filter(
+          (room) => !bookedRoomIds.includes(room._id.toString())
+        );
+
+        const detailedAvailability = availableRooms
+          .slice(0, quantity)
+          .map((room) => {
             const nights =
               (desiredCheckOutDate - desiredCheckInDate) /
               (1000 * 60 * 60 * 24);
@@ -202,8 +218,7 @@ const bookingController = {
               roomId: room._id,
               price: totalCost,
             };
-          })
-        );
+          });
 
         if (detailedAvailability.length >= quantity) {
           results.push({
@@ -226,7 +241,7 @@ const bookingController = {
 
       res.status(200).json(results);
     } catch (error) {
-      res.status(500).json({ message: "Server error", error });
+      next(error);
     }
   },
 };

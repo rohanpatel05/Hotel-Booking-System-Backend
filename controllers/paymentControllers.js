@@ -1,6 +1,8 @@
 import errorCodes from "../config/errorCodes.js";
 import Payment from "../models/payment.js";
 import Stripe from "stripe";
+import "dotenv/config";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const priceRegex = /^\d+(\.\d{1,2})?$/;
@@ -23,7 +25,7 @@ const paymentController = {
       }
 
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
+        amount: amount * 100,
         currency: "usd",
         automatic_payment_methods: {
           enabled: true,
@@ -66,6 +68,33 @@ const paymentController = {
       return res.status(200).json({ payment: payment });
     } catch (error) {
       next(error);
+    }
+  },
+  async stripeConfig(req, res, next) {
+    try {
+      res.status(200).json({
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  async retrievePaymentMethod(req, res, next) {
+    const { paymentMethodId = "" } = req.body;
+
+    if (!paymentMethodId) {
+      return res
+        .status(errorCodes.BAD_REQUEST)
+        .json({ message: "Payment method ID is required" });
+    }
+
+    try {
+      const paymentMethod = await stripe.paymentMethods.retrieve(
+        paymentMethodId
+      );
+      res.status(200).json(paymentMethod);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   },
 };

@@ -12,6 +12,14 @@ router.post(
   paymentController.processPayment
 );
 router.get(basePaymentURL, paymentController.getAllPayments);
-router.get(basePaymentURL + "/:paymentId", paymentController.getPaymentById);
+router.get(basePaymentURL + "/config", paymentController.stripeConfig);
+router.post(
+  basePaymentURL + "/retrieve-payment-method",
+  paymentController.retrievePaymentMethod
+);
+router.get(
+  basePaymentURL + "/get/:paymentId",
+  paymentController.getPaymentById
+);
 
 export default router;

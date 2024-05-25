@@ -147,6 +147,7 @@ const userController = {
   async refresh(req, res, next) {
     try {
       const { refreshToken = "" } = req.body;
+      console.log(refreshToken);
 
       if (!refreshToken) {
         return res
@@ -178,6 +179,7 @@ const userController = {
             { expiresIn: accessTokenExpiresIn }
           );
 
+          console.log(`refresh successful: `, accessToken);
           return res.status(200).json({
             message: "Access token refreshed successfully",
             accessToken,

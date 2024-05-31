@@ -14,12 +14,12 @@ router.post("/refresh", userController.refresh);
 
 // User profile routes
 router.put(
-  baseUserUrl + "/updateProfile/:userId",
+  baseUserUrl + "/update-profile/:userId",
   userAuthMiddleware,
   userController.updateUserProfile
 );
 router.put(
-  baseUserUrl + "/changePassword/:userId",
+  baseUserUrl + "/change-password/:userId",
   userExistMiddleware,
   userAuthMiddleware,
   userController.changePassword

@@ -112,6 +112,17 @@ const bookingController = {
       next(error);
     }
   },
+  async getBookingByUserID(req, res, next) {
+    try {
+      const booking = await Booking.find({
+        customer: req.user.userId,
+      });
+
+      return res.status(200).json({ booking: booking });
+    } catch (error) {
+      next(error);
+    }
+  },
   async cancelBooking(req, res, next) {
     try {
       const { bookingId } = req.params;

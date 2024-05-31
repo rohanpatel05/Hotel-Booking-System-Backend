@@ -11,15 +11,26 @@ router.post(
   userAuthMiddleware,
   bookingController.bookRoom
 );
-router.get(baseBookingUrl + "/", bookingController.getAllBookings);
-router.get(baseBookingUrl + "/:bookingId", bookingController.getBookingById);
+router.get(
+  baseBookingUrl + "/get-all-bookings",
+  bookingController.getAllBookings
+);
+router.get(
+  baseBookingUrl + "/by-id/:bookingId",
+  bookingController.getBookingById
+);
+router.get(
+  baseBookingUrl + "/by-user",
+  userAuthMiddleware,
+  bookingController.getBookingByUserID
+);
 router.put(
   baseBookingUrl + "/cancel/:bookingId",
   userAuthMiddleware,
   bookingController.cancelBooking
 );
 router.post(
-  baseBookingUrl + "/checkAvailability",
+  baseBookingUrl + "/check-availability",
   bookingController.checkAvailability
 );
 

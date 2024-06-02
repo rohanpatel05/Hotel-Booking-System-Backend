@@ -55,6 +55,13 @@ const userController = {
       });
       await newUser.save();
 
+      const user = {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      };
+
       const accessToken = jwt.sign(
         { userId: newUser._id },
         process.env.ACCESS_TOKEN_SECRET,
@@ -72,7 +79,7 @@ const userController = {
         accessTokenExpiration: accessTokenExpiration,
         refreshToken,
         refreshTokenExpiration: refreshTokenExpiration,
-        user: newUser,
+        user,
       });
     } catch (error) {
       next(error);
@@ -98,15 +105,22 @@ const userController = {
           .json({ message: "Invalid password format" });
       }
 
-      const user = await User.findOne({ email });
+      const userInfo = await User.findOne({ email });
 
-      if (!user) {
+      if (!userInfo) {
         return res
           .status(errorCodes.UNAUTHORIZED)
           .json({ message: "User not registerd" });
       }
 
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = await bcrypt.compare(password, userInfo.password);
+
+      const user = {
+        _id: userInfo._id,
+        name: userInfo.name,
+        email: userInfo.email,
+        role: userInfo.role,
+      };
 
       if (!passwordMatch) {
         return res
@@ -189,15 +203,27 @@ const userController = {
       next(error);
     }
   },
+  async getUserInfo(req, res, next) {
+    try {
+      const { userId } = req.params;
+
+      const user = await User.findById(userId).select("-password");
+
+      if (!user) {
+        return res
+          .status(errorCodes.NOT_FOUND)
+          .json({ message: "User not found" });
+      }
+
+      return res.status(200).json({ user });
+    } catch (error) {
+      next(error);
+    }
+  },
   async updateUserProfile(req, res, next) {
     try {
       const { userId } = req.params;
-      const {
-        name = "",
-        email = "",
-        phoneNumber = "",
-        address = "",
-      } = req.body;
+      const { name = "", phoneNumber = "", address = "" } = req.body;
 
       const user = await User.findById(userId);
 
@@ -208,7 +234,6 @@ const userController = {
       }
 
       if (name) user.name = name;
-      if (email) user.email = email;
       if (phoneNumber) user.phoneNumber = phoneNumber;
       if (address) user.address = address;
 
@@ -216,7 +241,7 @@ const userController = {
 
       return res
         .status(200)
-        .json({ message: "User profile updated successfully", user });
+        .json({ message: "User profile updated successfully" });
     } catch (error) {
       next(error);
     }

@@ -12,7 +12,7 @@ const bookingController = {
     session.startTransaction();
     try {
       const { bookings = [], totalAmount = 0.0, paymentMethod = "" } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user._id;
 
       if (!bookings || bookings.length === 0.0) {
         return res.status(errorCodes.BAD_REQUEST).json({
@@ -85,37 +85,10 @@ const bookingController = {
       session.endSession();
     }
   },
-  async getAllBookings(req, res, next) {
-    try {
-      const bookings = await Booking.find({ customer: req.user.userId });
-      return res.status(200).json({ booking: bookings });
-    } catch (error) {
-      next(error);
-    }
-  },
-  async getBookingById(req, res, next) {
-    try {
-      const { bookingId } = req.params;
-      const booking = await Booking.findOne({
-        _id: bookingId,
-        customer: req.user.userId,
-      });
-
-      if (!booking) {
-        return res
-          .status(errorCodes.NOT_FOUND)
-          .json({ message: "Booking not found" });
-      }
-
-      return res.status(200).json({ booking: booking });
-    } catch (error) {
-      next(error);
-    }
-  },
   async getBookingByUserID(req, res, next) {
     try {
       const booking = await Booking.find({
-        customer: req.user.userId,
+        customer: req.user._id,
       });
 
       return res.status(200).json({ booking: booking });
@@ -128,7 +101,7 @@ const bookingController = {
       const { bookingId } = req.params;
       const booking = await Booking.findOne({
         _id: bookingId,
-        customer: req.user.userId,
+        customer: req.user._id,
       });
 
       if (!booking) {

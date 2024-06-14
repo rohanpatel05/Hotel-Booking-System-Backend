@@ -1,32 +1,29 @@
 import express from "express";
 import bookingController from "../controllers/bookingControllers.js";
 import userAuthMiddleware from "../middlewares/userAuthMiddlewear.js";
+import mockAuthMiddleware from "../middlewares/mockAuthMiddleware.js";
+import adminAuthMiddleware from "../middlewares/adminAuthMiddleware.js";
 
 const router = express.Router();
 
 const baseBookingUrl = "/booking";
 
+const authMiddleware =
+  process.env.NODE_ENV === "test" ? mockAuthMiddleware : userAuthMiddleware;
+
 router.post(
   baseBookingUrl + "/book",
-  userAuthMiddleware,
+  authMiddleware,
   bookingController.bookRoom
 );
 router.get(
-  baseBookingUrl + "/get-all-bookings",
-  bookingController.getAllBookings
-);
-router.get(
-  baseBookingUrl + "/by-id/:bookingId",
-  bookingController.getBookingById
-);
-router.get(
   baseBookingUrl + "/by-user",
-  userAuthMiddleware,
+  authMiddleware,
   bookingController.getBookingByUserID
 );
 router.put(
   baseBookingUrl + "/cancel/:bookingId",
-  userAuthMiddleware,
+  authMiddleware,
   bookingController.cancelBooking
 );
 router.post(

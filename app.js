@@ -8,13 +8,12 @@ import roomRoutes from "./routes/roomRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import errorHandlerMiddleware from "./middlewares/errorHandler.js";
+import allowedOrigins from "./config/allowedOrigins.js";
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-
-const allowedOrigins = ["http://127.0.0.1:3000", "http://localhost:3000"];
 
 const corsOptions = {
   origin: function (origin, callback) {

@@ -16,15 +16,17 @@ const refreshTokenMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
 
 const setTokensAsCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: accessTokenMaxAge,
-    secure: false,
+    secure: true,
+    sameSite: "None",
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: refreshTokenMaxAge,
-    secure: false,
+    secure: true,
+    sameSite: "None",
   });
 };
 
@@ -196,9 +198,10 @@ const authControllers = {
           );
 
           res.cookie("accessToken", newAccessToken, {
-            httpOnly: false,
+            httpOnly: true,
             maxAge: accessTokenMaxAge,
-            secure: false,
+            secure: true,
+            sameSite: "None",
           });
 
           return res

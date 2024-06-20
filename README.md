@@ -38,8 +38,8 @@ This repository contains the backend code for the Hotel Booking System, providin
 
 ## Links
 
-- [Deployed App](#) - https://hotel-booking-system-tczx.onrender.com/
-- [Frontend Repository](#) - https://github.com/rohanpatel05/Hotel-Booking-System-Frontend/
-- [Docker Repository](#) - https://hub.docker.com/repository/docker/rohankp/hotel-booking-system-backend/general
+- [Deployed App](https://hotel-booking-system-tczx.onrender.com/)
+- [Frontend Repository](https://github.com/rohanpatel05/Hotel-Booking-System-Frontend/)
+- [Docker Repository (Server)](https://hub.docker.com/repository/docker/rohankp/hotel-booking-system-backend/general)
 
 **Note:** the server will spin down with inactivity, which can delay requests by 50 seconds or more. So, if this is encountered, please try again. 
